@@ -31,10 +31,10 @@ func CreateBookmark(bookmark *Bookmark) error {
 }
 
 func openDatabaseFile(modeFlags int) (*os.File, error) {
-	file := getDatabaseFile()
-	createDirectoryIfNeeded(file)
+	filePath := getDatabaseFile()
+	createDirectoryIfNeeded(filePath)
 
-	return os.OpenFile(file, modeFlags, FILE_PERMISSION)
+	return os.OpenFile(filePath, modeFlags, FILE_PERMISSION)
 }
 
 func getDatabaseFile() string {

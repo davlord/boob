@@ -15,21 +15,26 @@ const (
 )
 
 func CreateBookmark(bookmark *Bookmark) error {
-	file := getDatabaseFile()
-	createDirectoryIfNeeded(file)
 
-	f, err := os.OpenFile(file, FILE_MODE_WRITE, FILE_PERMISSION)
+	f, err := openDatabaseFile(FILE_MODE_WRITE)
 	if err != nil {
 		return err
 	}
-
 	defer f.Close()
+
 	serializedBookmark := serializeBookmark(bookmark)
 	if _, err = f.WriteString(serializedBookmark + "\n"); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func openDatabaseFile(modeFlags int) (*os.File, error) {
+	file := getDatabaseFile()
+	createDirectoryIfNeeded(file)
+
+	return os.OpenFile(file, modeFlags, FILE_PERMISSION)
 }
 
 func getDatabaseFile() string {

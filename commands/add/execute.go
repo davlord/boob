@@ -7,8 +7,12 @@ import (
 	. "github.com/davlord/boob/core/model"
 )
 
-func Execute(args []string) {
+func Execute(args []string) error {
 	var bookmark Bookmark = parseArguments(args)
-	dao.CreateBookmark(&bookmark)
-	fmt.Println(bookmark)
+	err := dao.CreateBookmark(&bookmark)
+	if err != nil {
+		return err
+	}
+	fmt.Println("bookmark added :" + bookmark.String())
+	return nil
 }

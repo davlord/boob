@@ -12,12 +12,17 @@ func main() {
 		invalidCommandExit()
 	}
 
+	var err error = nil
 	switch os.Args[1] {
 
 	case "add":
-		add.Execute(os.Args[2:])
+		err = add.Execute(os.Args[2:])
 	default:
 		invalidCommandExit()
+	}
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 	}
 
 }

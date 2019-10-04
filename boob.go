@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/davlord/boob/commands/add"
+	"github.com/davlord/boob/commands/print"
 )
 
 func main() {
@@ -17,6 +18,8 @@ func main() {
 
 	case "add":
 		err = add.Execute(os.Args[2:])
+	case "print":
+		err = print.Execute()
 	default:
 		invalidCommandExit()
 	}

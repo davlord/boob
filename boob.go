@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/davlord/boob/commands/add"
+	"github.com/davlord/boob/commands/browse"
 	"github.com/davlord/boob/commands/print"
 )
 
@@ -20,6 +21,8 @@ func main() {
 		err = add.Execute(os.Args[2:])
 	case "print":
 		err = print.Execute()
+	case "browse":
+		err = browse.Execute(os.Args[2])
 	default:
 		invalidCommandExit()
 	}

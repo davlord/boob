@@ -54,6 +54,27 @@ func FindBookmarkByUrl(url string) (*Bookmark, error) {
 	return foundBookmark, nil
 }
 
+func FindBookmarkByIndex(index int) (*Bookmark, error) {
+	f, err := openDatabaseFile(FILE_MODE_READ)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var i int = 0
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		serializedBookmark := scanner.Text()
+		if i == index {
+			bookmark := unserializeBookmark(serializedBookmark)
+			return bookmark, nil
+		}
+		i++
+	}
+
+	return nil, nil
+}
+
 func GetAllBookmarks() ([]*Bookmark, error) {
 	f, err := openDatabaseFile(FILE_MODE_READ)
 	if err != nil {

@@ -2,7 +2,6 @@ package dao
 
 import (
 	"bufio"
-	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -26,20 +25,33 @@ func CreateBookmark(bookmark *Bookmark) error {
 	}
 	defer f.Close()
 
-	existingBookmark, err := findBookmarkByUrl(bookmark.Url)
-	if err != nil {
-		return err
-	}
-	if existingBookmark != nil {
-		return errors.New("a bookmark with the same URL already exists")
-	}
-
 	serializedBookmark := serializeBookmark(bookmark)
 	if _, err = f.WriteString(serializedBookmark + "\n"); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func FindBookmarkByUrl(url string) (*Bookmark, error) {
+	f, err := openDatabaseFile(FILE_MODE_READ)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var foundBookmark *Bookmark = nil
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		serializedBookmark := scanner.Text()
+		if unserializedBookmark := unserializeBookmark(serializedBookmark); unserializedBookmark.Url == url {
+			foundBookmark = unserializedBookmark
+			break
+		}
+	}
+
+	return foundBookmark, nil
 }
 
 func openDatabaseFile(modeFlags int) (*os.File, error) {
@@ -72,25 +84,4 @@ func unserializeBookmark(serializedBookmark string) *Bookmark {
 		Url:  parts[1],
 		Tags: strings.Split(parts[2], ","),
 	}
-}
-
-func findBookmarkByUrl(url string) (*Bookmark, error) {
-	f, err := openDatabaseFile(FILE_MODE_READ)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	var foundBookmark *Bookmark = nil
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		serializedBookmark := scanner.Text()
-		if unserializedBookmark := unserializeBookmark(serializedBookmark); unserializedBookmark.Url == url {
-			foundBookmark = unserializedBookmark
-			break
-		}
-	}
-
-	return foundBookmark, nil
 }

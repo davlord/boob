@@ -2,6 +2,7 @@ package print
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/davlord/boob/core/dao"
@@ -36,6 +37,7 @@ func printTags() error {
 	if err != nil {
 		return err
 	}
+	sort.Strings(tags)
 	for _, tag := range tags {
 		fmt.Printf("%s\n", tag)
 	}

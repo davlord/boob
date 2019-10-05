@@ -8,8 +8,8 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-func Execute(bookmarkId string) error {
-	id, err := strconv.Atoi(bookmarkId)
+func Execute(args []string) error {
+	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err
 	}

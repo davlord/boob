@@ -94,6 +94,29 @@ func GetAllBookmarks() ([]*Bookmark, error) {
 	return bookmarks, nil
 }
 
+func GetAllTags() ([]string, error) {
+	// get all bookmarks
+	bookmarks, err := GetAllBookmarks()
+	if err != nil {
+		return nil, err
+	}
+
+	// extract unique tags from all bookmarks
+	tagSet := make(map[string]struct{})
+	for _, bm := range bookmarks {
+		for _, tag := range bm.Tags {
+			tagSet[tag] = struct{}{}
+		}
+	}
+
+	// build tags slice as a result
+	tags := make([]string, 0, len(tagSet))
+	for tag, _ := range tagSet {
+		tags = append(tags, tag)
+	}
+	return tags, nil
+}
+
 func openDatabaseFile(modeFlags int) (*os.File, error) {
 	filePath := getDatabaseFile()
 	createDirectoryIfNeeded(filePath)

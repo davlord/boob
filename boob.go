@@ -15,14 +15,18 @@ func main() {
 	}
 
 	var err error = nil
+	var executeArgs []string = nil
+	if len(os.Args) > 2 {
+		executeArgs = os.Args[2:]
+	}
 	switch os.Args[1] {
 
 	case "add":
-		err = add.Execute(os.Args[2:])
+		err = add.Execute(executeArgs)
 	case "print":
-		err = print.Execute()
+		err = print.Execute(executeArgs)
 	case "browse":
-		err = browse.Execute(os.Args[2])
+		err = browse.Execute(executeArgs)
 	default:
 		invalidCommandExit()
 	}

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/davlord/boob/commands/add"
-	"github.com/davlord/boob/commands/browse"
-	"github.com/davlord/boob/commands/print"
+	"github.com/davlord/boob/command/add"
+	"github.com/davlord/boob/command/browse"
+	"github.com/davlord/boob/command/print"
 )
 
 func main() {

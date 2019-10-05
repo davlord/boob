@@ -1,4 +1,4 @@
-package browse
+package command
 
 import (
 	"errors"
@@ -8,7 +8,9 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-func Execute(args []string) error {
+type Browse struct{}
+
+func (browse Browse) Execute(args []string) error {
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err

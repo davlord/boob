@@ -1,4 +1,4 @@
-package print
+package command
 
 import (
 	"fmt"
@@ -8,7 +8,9 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-func Execute(args []string) error {
+type Print struct{}
+
+func (print Print) Execute(args []string) error {
 	if args == nil {
 		return printBookmarks()
 	}

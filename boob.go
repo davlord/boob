@@ -1,43 +1,51 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
-	"github.com/davlord/boob/command/add"
-	"github.com/davlord/boob/command/browse"
-	"github.com/davlord/boob/command/print"
+	"github.com/davlord/boob/command"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		invalidCommandExit()
+		showErrorAndExit(errors.New("missing command"))
 	}
 
-	var err error = nil
+	// select command
+	cmd, err := getCommand(os.Args[1])
+	if err != nil {
+		showErrorAndExit(err)
+	}
+
+	// build command arguments
 	var executeArgs []string = nil
 	if len(os.Args) > 2 {
 		executeArgs = os.Args[2:]
 	}
-	switch os.Args[1] {
 
-	case "add":
-		err = add.Execute(executeArgs)
-	case "print":
-		err = print.Execute(executeArgs)
-	case "browse":
-		err = browse.Execute(executeArgs)
-	default:
-		invalidCommandExit()
+	// execute command
+	if err := cmd.Execute(executeArgs); err != nil {
+		showErrorAndExit(err)
 	}
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-	}
-
 }
 
-func invalidCommandExit() {
-	fmt.Println("invalid command")
+func getCommand(commandName string) (command.Command, error) {
+	switch commandName {
+
+	case "add":
+		return command.Add{}, nil
+	case "print":
+		return command.Print{}, nil
+	case "browse":
+		return command.Browse{}, nil
+	default:
+		return nil, errors.New("unknown command")
+	}
+}
+
+func showErrorAndExit(err error) {
+	fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 	os.Exit(1)
 }

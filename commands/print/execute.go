@@ -36,8 +36,8 @@ func printTags() error {
 	if err != nil {
 		return err
 	}
-	for i, tag := range tags {
-		fmt.Println(string(i) + tag)
+	for _, tag := range tags {
+		fmt.Printf("%s\n", tag)
 	}
 	return nil
 }

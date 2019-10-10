@@ -19,7 +19,7 @@ func (browse Browse) Execute(args []string) error {
 	// check if a bookmark with the same URL already exists
 	existingBookmark, err := dao.FindBookmarkByIndex(id - 1)
 	if err != nil {
-		return nil
+		return err
 	}
 	if existingBookmark == nil {
 		return errors.New("invalid id, bookmark not found")

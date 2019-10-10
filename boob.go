@@ -40,6 +40,8 @@ func getCommand(commandName string) (command.Command, error) {
 		return command.Print{}, nil
 	case "browse":
 		return command.Browse{}, nil
+	case "remove":
+		return command.Remove{}, nil
 	default:
 		return nil, errors.New("unknown command")
 	}

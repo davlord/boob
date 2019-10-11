@@ -2,8 +2,6 @@ package dao
 
 import (
 	"bufio"
-	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -129,7 +127,7 @@ func DeleteBookmarkByIndex(indexToDelete int) error {
 	var lineIndex int = 0
 	scanner := bufio.NewScanner(fr)
 
-	s := lineScanner{}
+	s := byteRange{}
 	scanner.Split(s.splitFunc)
 
 	for scanner.Scan() {
@@ -138,28 +136,7 @@ func DeleteBookmarkByIndex(indexToDelete int) error {
 		}
 		lineIndex++
 	}
-	fmt.Printf("lineIndex=%d, position=%d:%d\n", lineIndex, s.start, s.end)
-
-	buf := make([]byte, 1024)
-	writeAt := s.start
-	readAt := s.end
-	for {
-		n, err := fr.ReadAt(buf, readAt)
-		if err != nil && err != io.EOF {
-			return err
-		}
-		if n == 0 {
-			break
-		}
-
-		if _, err := fr.WriteAt(buf[:n], writeAt); err != nil {
-			return err
-		}
-		writeAt += int64(n)
-		readAt += int64(n)
-	}
-
-	fr.Truncate(writeAt)
+	increaseFileInPlace(fr, s, []byte{})
 
 	return nil
 }
@@ -194,16 +171,4 @@ func unserializeBookmark(serializedBookmark string) *Bookmark {
 		Url:  parts[1],
 		Tags: strings.Split(parts[2], ","),
 	}
-}
-
-type lineScanner struct {
-	start int64
-	end   int64
-}
-
-func (state *lineScanner) splitFunc(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	state.start = state.end
-	advance, token, err = bufio.ScanLines(data, atEOF)
-	state.end += int64(advance)
-	return advance, token, err
 }

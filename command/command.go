@@ -1,5 +1,3 @@
 package command
 
-type Command interface {
-	Execute([]string) error
-}
+type Command func([]string) error

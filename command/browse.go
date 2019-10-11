@@ -8,9 +8,7 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-type Browse struct{}
-
-func (browse Browse) Execute(args []string) error {
+func Browse(args []string) error {
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err

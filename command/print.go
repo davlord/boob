@@ -8,9 +8,7 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-type Print struct{}
-
-func (print Print) Execute(args []string) error {
+func Print(args []string) error {
 	if args == nil {
 		return printBookmarks()
 	}

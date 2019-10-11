@@ -10,9 +10,7 @@ import (
 	. "github.com/davlord/boob/core/model"
 )
 
-type Add struct{}
-
-func (add Add) Execute(args []string) error {
+func Add(args []string) error {
 	var bookmark Bookmark = parseArguments(args)
 
 	// check if a bookmark with the same URL already exists

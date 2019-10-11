@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// execute command
-	if err := cmd.Execute(executeArgs); err != nil {
+	if err := cmd(executeArgs); err != nil {
 		showErrorAndExit(err)
 	}
 }
@@ -35,13 +35,13 @@ func getCommand(commandName string) (command.Command, error) {
 	switch commandName {
 
 	case "add":
-		return command.Add{}, nil
+		return command.Add, nil
 	case "print":
-		return command.Print{}, nil
+		return command.Print, nil
 	case "browse":
-		return command.Browse{}, nil
+		return command.Browse, nil
 	case "remove":
-		return command.Remove{}, nil
+		return command.Remove, nil
 	default:
 		return nil, errors.New("unknown command")
 	}

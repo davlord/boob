@@ -6,9 +6,7 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-type Remove struct{}
-
-func (remove Remove) Execute(args []string) error {
+func Remove(args []string) error {
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err

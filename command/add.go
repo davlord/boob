@@ -14,11 +14,11 @@ func Add(args []string) error {
 	var bookmark Bookmark = parseArguments(args)
 
 	// check if a bookmark with the same URL already exists
-	existingBookmark, err := dao.FindBookmarkByUrl(bookmark.Url)
+	existingBookmarkIndex, err := dao.FindBookmarkIndexByUrl(bookmark.Url)
 	if err != nil {
 		return err
 	}
-	if existingBookmark != nil {
+	if existingBookmarkIndex >= 0 {
 		return errors.New("a bookmark with the same URL already exists")
 	}
 

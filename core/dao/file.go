@@ -2,6 +2,7 @@ package dao
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -62,11 +63,13 @@ func reduceFileInPlace(file *os.File, byteRangeToRemove byteRange, replaceWith [
 func increaseFileInPlace(file *os.File, byteRangeToRemove byteRange, replaceWith []byte) error {
 
 	newContentLen := len(replaceWith)
-
+	fileSizeDiff := newContentLen - byteRangeToRemove.len()
+	fmt.Printf("newContentLen=%d\n", newContentLen)
 	bufferSize := nextPowerOf2Int(newContentLen)
 	if bufferSize < BUFFER_SIZE {
 		bufferSize = BUFFER_SIZE
 	}
+	fmt.Printf("bufferSize=%d\n", bufferSize)
 
 	readBuffer := make([]byte, bufferSize)
 	writeBuffer := make([]byte, bufferSize)
@@ -79,6 +82,7 @@ func increaseFileInPlace(file *os.File, byteRangeToRemove byteRange, replaceWith
 	writeAt := byteRangeToRemove.start
 	readAt := byteRangeToRemove.end
 
+	i := 0
 	for {
 		var err error
 
@@ -87,25 +91,36 @@ func increaseFileInPlace(file *os.File, byteRangeToRemove byteRange, replaceWith
 		if err != nil && err != io.EOF {
 			return err
 		}
+		fmt.Printf("read=%d - %d, readBuffer=%s\n", readAt, readAt+int64(readBufferLen), readBuffer[:readBufferLen])
 
 		// write buffer -> file
 		writeBufferLen, err = file.WriteAt(writeBuffer[:writeBufferLen], writeAt)
 		if err != nil {
 			return err
 		}
+		fmt.Printf("write=%d - %d, writeBuffer=%s\n", writeAt, writeAt+int64(writeBufferLen), writeBuffer[:writeBufferLen])
 
 		// move read/write cursors forward
 		writeAt += int64(writeBufferLen)
-		readAt += int64(readBufferLen)
+
+		if fileSizeDiff < 0 {
+			readAt += int64(readBufferLen)
+		} else {
+			readAt += int64(writeBufferLen)
+		}
 
 		// swap read/write buffers
 		readBuffer, writeBuffer = writeBuffer, readBuffer
 		readBufferLen, writeBufferLen = writeBufferLen, readBufferLen
 
 		// exit loop if there is nothing more to write
-		if writeBufferLen == 0 {
+		if writeBufferLen == 0 || i > 3 {
 			break
 		}
+
+		//http://democratieparticipative.tw/ [perso,nwo,news]
+
+		i++
 	}
 
 	file.Truncate(writeAt)

@@ -33,25 +33,24 @@ func CreateBookmark(bookmark *Bookmark) error {
 	return nil
 }
 
-func FindBookmarkByUrl(url string) (*Bookmark, error) {
+func FindBookmarkIndexByUrl(url string) (int, error) {
 	f, err := openDatabaseFile(FILE_MODE_READ)
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 	defer f.Close()
 
-	var foundBookmark *Bookmark = nil
-
+	index := 0
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		serializedBookmark := scanner.Text()
 		if unserializedBookmark := unserializeBookmark(serializedBookmark); unserializedBookmark.Url == url {
-			foundBookmark = unserializedBookmark
-			break
+			return index, nil
 		}
+		index++
 	}
 
-	return foundBookmark, nil
+	return -1, nil
 }
 
 func FindBookmarkByIndex(index int) (*Bookmark, error) {
@@ -118,11 +117,29 @@ func GetAllTags() ([]string, error) {
 }
 
 func DeleteBookmarkByIndex(indexToDelete int) error {
-	fr, err := openDatabaseFile(os.O_RDWR)
+	fr, s, err := updateDatabaseFileAtIndex(indexToDelete)
 	if err != nil {
 		return err
 	}
 	defer fr.Close()
+	return increaseFileInPlace(fr, *s, []byte{})
+}
+
+func UpdateBookmarkByIndex(index int, bookmark *Bookmark) error {
+	fr, s, err := updateDatabaseFileAtIndex(index)
+	if err != nil {
+		return err
+	}
+	defer fr.Close()
+	serializedBookmark := serializeBookmark(bookmark)
+	return increaseFileInPlace(fr, *s, []byte(serializedBookmark+"\n"))
+}
+
+func updateDatabaseFileAtIndex(index int) (*os.File, *byteRange, error) {
+	fr, err := openDatabaseFile(os.O_RDWR)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	var lineIndex int = 0
 	scanner := bufio.NewScanner(fr)
@@ -131,14 +148,13 @@ func DeleteBookmarkByIndex(indexToDelete int) error {
 	scanner.Split(s.splitFunc)
 
 	for scanner.Scan() {
-		if indexToDelete == lineIndex {
+		if index == lineIndex {
 			break
 		}
 		lineIndex++
 	}
-	increaseFileInPlace(fr, s, []byte{})
 
-	return nil
+	return fr, &s, nil
 }
 
 func openDatabaseFile(modeFlags int) (*os.File, error) {

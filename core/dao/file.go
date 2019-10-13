@@ -2,7 +2,6 @@ package dao
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"math"
 	"os"
@@ -64,12 +63,10 @@ func increaseFileInPlace(file *os.File, byteRangeToRemove byteRange, replaceWith
 
 	newContentLen := len(replaceWith)
 	fileSizeDiff := newContentLen - byteRangeToRemove.len()
-	fmt.Printf("newContentLen=%d\n", newContentLen)
 	bufferSize := nextPowerOf2Int(newContentLen)
 	if bufferSize < BUFFER_SIZE {
 		bufferSize = BUFFER_SIZE
 	}
-	fmt.Printf("bufferSize=%d\n", bufferSize)
 
 	readBuffer := make([]byte, bufferSize)
 	writeBuffer := make([]byte, bufferSize)
@@ -91,14 +88,12 @@ func increaseFileInPlace(file *os.File, byteRangeToRemove byteRange, replaceWith
 		if err != nil && err != io.EOF {
 			return err
 		}
-		fmt.Printf("read=%d - %d, readBuffer=%s\n", readAt, readAt+int64(readBufferLen), readBuffer[:readBufferLen])
 
 		// write buffer -> file
 		writeBufferLen, err = file.WriteAt(writeBuffer[:writeBufferLen], writeAt)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("write=%d - %d, writeBuffer=%s\n", writeAt, writeAt+int64(writeBufferLen), writeBuffer[:writeBufferLen])
 
 		// move read/write cursors forward
 		writeAt += int64(writeBufferLen)
@@ -117,8 +112,6 @@ func increaseFileInPlace(file *os.File, byteRangeToRemove byteRange, replaceWith
 		if writeBufferLen == 0 || i > 3 {
 			break
 		}
-
-		//http://democratieparticipative.tw/ [perso,nwo,news]
 
 		i++
 	}

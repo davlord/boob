@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/davlord/boob/command"
+	"github.com/davlord/boob/core/dao"
 )
 
 func main() {
@@ -14,19 +15,36 @@ func main() {
 	}
 
 	// select command
-	cmd, err := getCommand(os.Args[1])
+	var database string
+	var cmd command.Command
+	var err error
+	if len(os.Args) > 2 {
+		cmd, err = getCommand(os.Args[2])
+	}
+	if cmd != nil {
+		database = os.Args[1]
+	} else {
+		cmd, err = getCommand(os.Args[1])
+	}
 	if err != nil {
 		showErrorAndExit(err)
 	}
 
 	// build command arguments
 	var executeArgs []string = nil
-	if len(os.Args) > 2 {
+	if database != "" && len(os.Args) > 3 {
+		executeArgs = os.Args[3:]
+	} else if database == "" && len(os.Args) > 2 {
 		executeArgs = os.Args[2:]
 	}
 
+	// build dao
+	dao := dao.BookmarkDao{
+		Database: database,
+	}
+
 	// execute command
-	if err := cmd(executeArgs); err != nil {
+	if err := cmd(&dao, executeArgs); err != nil {
 		showErrorAndExit(err)
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-func Browse(args []string) error {
+func Browse(dao *dao.BookmarkDao, args []string) error {
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err

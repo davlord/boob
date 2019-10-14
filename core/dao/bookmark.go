@@ -11,15 +11,20 @@ import (
 )
 
 const (
-	FILE_MODE_WRITE = os.O_APPEND | os.O_CREATE | os.O_WRONLY
-	FILE_MODE_READ  = os.O_RDONLY
-	FILE_PERMISSION = 0644
-	DIR_PERMISSION  = 0755
+	FILE_MODE_WRITE  = os.O_APPEND | os.O_CREATE | os.O_WRONLY
+	FILE_MODE_READ   = os.O_RDONLY | os.O_CREATE
+	FILE_PERMISSION  = 0644
+	DIR_PERMISSION   = 0755
+	DEFAULT_DATABASE = "default"
 )
 
-func CreateBookmark(bookmark *Bookmark) error {
+type BookmarkDao struct {
+	Database string
+}
 
-	f, err := openDatabaseFile(FILE_MODE_WRITE)
+func (dao *BookmarkDao) CreateBookmark(bookmark *Bookmark) error {
+
+	f, err := dao.openDatabaseFile(FILE_MODE_WRITE)
 	if err != nil {
 		return err
 	}
@@ -33,8 +38,8 @@ func CreateBookmark(bookmark *Bookmark) error {
 	return nil
 }
 
-func FindBookmarkIndexByUrl(url string) (int, error) {
-	f, err := openDatabaseFile(FILE_MODE_READ)
+func (dao *BookmarkDao) FindBookmarkIndexByUrl(url string) (int, error) {
+	f, err := dao.openDatabaseFile(FILE_MODE_READ)
 	if err != nil {
 		return -1, err
 	}
@@ -53,8 +58,8 @@ func FindBookmarkIndexByUrl(url string) (int, error) {
 	return -1, nil
 }
 
-func FindBookmarkByIndex(index int) (*Bookmark, error) {
-	f, err := openDatabaseFile(FILE_MODE_READ)
+func (dao *BookmarkDao) FindBookmarkByIndex(index int) (*Bookmark, error) {
+	f, err := dao.openDatabaseFile(FILE_MODE_READ)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +79,8 @@ func FindBookmarkByIndex(index int) (*Bookmark, error) {
 	return nil, nil
 }
 
-func GetAllBookmarks() ([]*Bookmark, error) {
-	f, err := openDatabaseFile(FILE_MODE_READ)
+func (dao *BookmarkDao) GetAllBookmarks() ([]*Bookmark, error) {
+	f, err := dao.openDatabaseFile(FILE_MODE_READ)
 	if err != nil {
 		return nil, err
 	}
@@ -93,9 +98,9 @@ func GetAllBookmarks() ([]*Bookmark, error) {
 	return bookmarks, nil
 }
 
-func GetAllTags() ([]string, error) {
+func (dao *BookmarkDao) GetAllTags() ([]string, error) {
 	// get all bookmarks
-	bookmarks, err := GetAllBookmarks()
+	bookmarks, err := dao.GetAllBookmarks()
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +121,8 @@ func GetAllTags() ([]string, error) {
 	return tags, nil
 }
 
-func DeleteBookmarkByIndex(indexToDelete int) error {
-	fr, s, err := updateDatabaseFileAtIndex(indexToDelete)
+func (dao *BookmarkDao) DeleteBookmarkByIndex(indexToDelete int) error {
+	fr, s, err := dao.updateDatabaseFileAtIndex(indexToDelete)
 	if err != nil {
 		return err
 	}
@@ -125,8 +130,8 @@ func DeleteBookmarkByIndex(indexToDelete int) error {
 	return increaseFileInPlace(fr, *s, []byte{})
 }
 
-func UpdateBookmarkByIndex(index int, bookmark *Bookmark) error {
-	fr, s, err := updateDatabaseFileAtIndex(index)
+func (dao *BookmarkDao) UpdateBookmarkByIndex(index int, bookmark *Bookmark) error {
+	fr, s, err := dao.updateDatabaseFileAtIndex(index)
 	if err != nil {
 		return err
 	}
@@ -135,8 +140,8 @@ func UpdateBookmarkByIndex(index int, bookmark *Bookmark) error {
 	return increaseFileInPlace(fr, *s, []byte(serializedBookmark+"\n"))
 }
 
-func updateDatabaseFileAtIndex(index int) (*os.File, *byteRange, error) {
-	fr, err := openDatabaseFile(os.O_RDWR)
+func (dao *BookmarkDao) updateDatabaseFileAtIndex(index int) (*os.File, *byteRange, error) {
+	fr, err := dao.openDatabaseFile(os.O_RDWR)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -157,15 +162,19 @@ func updateDatabaseFileAtIndex(index int) (*os.File, *byteRange, error) {
 	return fr, &s, nil
 }
 
-func openDatabaseFile(modeFlags int) (*os.File, error) {
-	filePath := getDatabaseFile()
+func (dao *BookmarkDao) openDatabaseFile(modeFlags int) (*os.File, error) {
+	filePath := dao.getDatabaseFile()
 	createDirectoryIfNeeded(filePath)
 
 	return os.OpenFile(filePath, modeFlags, FILE_PERMISSION)
 }
 
-func getDatabaseFile() string {
-	return filepath.Join(os.Getenv("HOME"), ".config", "boob", "boobs")
+func (dao *BookmarkDao) getDatabaseFile() string {
+	databaseFile := dao.Database
+	if databaseFile == "" {
+		databaseFile = DEFAULT_DATABASE
+	}
+	return filepath.Join(os.Getenv("HOME"), ".config", "boob", databaseFile+".db")
 }
 
 func createDirectoryIfNeeded(file string) {

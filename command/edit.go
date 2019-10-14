@@ -9,7 +9,7 @@ import (
 	. "github.com/davlord/boob/core/model"
 )
 
-func Edit(args []string) error {
+func Edit(dao *dao.BookmarkDao, args []string) error {
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err

@@ -6,7 +6,7 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-func Remove(args []string) error {
+func Remove(dao *dao.BookmarkDao, args []string) error {
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err

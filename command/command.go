@@ -1,3 +1,5 @@
 package command
 
-type Command func([]string) error
+import "github.com/davlord/boob/core/dao"
+
+type Command func(*dao.BookmarkDao, []string) error

@@ -8,19 +8,22 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-func Print(args []string) error {
+func Print(dao *dao.BookmarkDao, args []string) error {
 	if args == nil {
-		return printBookmarks()
+		return printBookmarks(dao)
 	}
 
 	if args[0] == "tags" {
-		return printTags()
+		return printTags(dao)
+	}
+	if args[0] == "databases" {
+		return printDatabases(dao)
 	}
 
 	return nil
 }
 
-func printBookmarks() error {
+func printBookmarks(dao *dao.BookmarkDao) error {
 	bookmarks, err := dao.GetAllBookmarks()
 	if err != nil {
 		return err
@@ -32,13 +35,25 @@ func printBookmarks() error {
 	return nil
 }
 
-func printTags() error {
+func printTags(dao *dao.BookmarkDao) error {
 	tags, err := dao.GetAllTags()
 	if err != nil {
 		return err
 	}
 	sort.Strings(tags)
 	for _, tag := range tags {
+		fmt.Printf("%s\n", tag)
+	}
+	return nil
+}
+
+func printDatabases(dao *dao.BookmarkDao) error {
+	databases, err := dao.GetAllDatabases()
+	if err != nil {
+		return err
+	}
+	sort.Strings(databases)
+	for _, tag := range databases {
 		fmt.Printf("%s\n", tag)
 	}
 	return nil

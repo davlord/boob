@@ -10,7 +10,7 @@ import (
 	. "github.com/davlord/boob/core/model"
 )
 
-func Add(args []string) error {
+func Add(dao *dao.BookmarkDao, args []string) error {
 	var bookmark Bookmark = parseArguments(args)
 
 	// check if a bookmark with the same URL already exists

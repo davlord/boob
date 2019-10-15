@@ -9,42 +9,29 @@ import (
 	"github.com/davlord/boob/core/dao"
 )
 
-func main() {
-	if len(os.Args) < 2 {
-		showErrorAndExit(errors.New("missing command"))
+type commandContext struct {
+	database    string
+	executeFunc command.Command
+	executeArgs []string
+}
+
+func (cmd *commandContext) execute() error {
+	// build dao
+	dao := dao.BookmarkDao{
+		Database: cmd.database,
 	}
 
-	// select command
-	var database string
-	var cmd command.Command
-	var err error
-	if len(os.Args) > 2 {
-		cmd, err = getCommand(os.Args[2])
-	}
-	if cmd != nil {
-		database = os.Args[1]
-	} else {
-		cmd, err = getCommand(os.Args[1])
-	}
+	// execute command
+	return cmd.executeFunc(&dao, cmd.executeArgs)
+}
+
+func main() {
+	commandContext, err := parseArgs()
 	if err != nil {
 		showErrorAndExit(err)
 	}
 
-	// build command arguments
-	var executeArgs []string = nil
-	if database != "" && len(os.Args) > 3 {
-		executeArgs = os.Args[3:]
-	} else if database == "" && len(os.Args) > 2 {
-		executeArgs = os.Args[2:]
-	}
-
-	// build dao
-	dao := dao.BookmarkDao{
-		Database: database,
-	}
-
-	// execute command
-	if err := cmd(&dao, executeArgs); err != nil {
+	if err := commandContext.execute(); err != nil {
 		showErrorAndExit(err)
 	}
 }
@@ -70,4 +57,36 @@ func getCommand(commandName string) (command.Command, error) {
 func showErrorAndExit(err error) {
 	fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 	os.Exit(1)
+}
+
+func parseArgs() (*commandContext, error) {
+	argsLen := len(os.Args)
+	if argsLen < 2 {
+		return nil, errors.New("missing command")
+	}
+
+	commandContext := commandContext{}
+
+	// select command
+	var err error
+	if argsLen > 2 {
+		commandContext.executeFunc, err = getCommand(os.Args[2])
+	}
+	if commandContext.executeFunc != nil {
+		commandContext.database = os.Args[1]
+	} else {
+		commandContext.executeFunc, err = getCommand(os.Args[1])
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// build command arguments
+	if commandContext.database != "" && argsLen > 3 {
+		commandContext.executeArgs = os.Args[3:]
+	} else if commandContext.database == "" && argsLen > 2 {
+		commandContext.executeArgs = os.Args[2:]
+	}
+
+	return &commandContext, nil
 }

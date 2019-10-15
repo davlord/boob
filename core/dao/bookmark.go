@@ -2,6 +2,7 @@ package dao
 
 import (
 	"bufio"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -11,11 +12,12 @@ import (
 )
 
 const (
-	FILE_MODE_WRITE  = os.O_APPEND | os.O_CREATE | os.O_WRONLY
-	FILE_MODE_READ   = os.O_RDONLY | os.O_CREATE
-	FILE_PERMISSION  = 0644
-	DIR_PERMISSION   = 0755
-	DEFAULT_DATABASE = "default"
+	FILE_MODE_WRITE      = os.O_APPEND | os.O_CREATE | os.O_WRONLY
+	FILE_MODE_READ       = os.O_RDONLY | os.O_CREATE
+	FILE_PERMISSION      = 0644
+	DIR_PERMISSION       = 0755
+	DEFAULT_DATABASE     = "default"
+	DATABASE_FILE_SUFFIX = ".db"
 )
 
 type BookmarkDao struct {
@@ -121,6 +123,28 @@ func (dao *BookmarkDao) GetAllTags() ([]string, error) {
 	return tags, nil
 }
 
+func (dao *BookmarkDao) GetAllDatabases() (databases []string, err error) {
+	databasesDir := getDatabasesDir()
+	files, err := ioutil.ReadDir(databasesDir)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(file.Name(), DATABASE_FILE_SUFFIX) {
+			continue
+		}
+
+		database := strings.TrimSuffix(file.Name(), DATABASE_FILE_SUFFIX)
+		databases = append(databases, database)
+	}
+
+	return databases, nil
+}
+
 func (dao *BookmarkDao) DeleteBookmarkByIndex(indexToDelete int) error {
 	fr, s, err := dao.updateDatabaseFileAtIndex(indexToDelete)
 	if err != nil {
@@ -174,7 +198,11 @@ func (dao *BookmarkDao) getDatabaseFile() string {
 	if databaseFile == "" {
 		databaseFile = DEFAULT_DATABASE
 	}
-	return filepath.Join(os.Getenv("HOME"), ".config", "boob", databaseFile+".db")
+	return filepath.Join(getDatabasesDir(), databaseFile+DATABASE_FILE_SUFFIX)
+}
+
+func getDatabasesDir() string {
+	return filepath.Join(os.Getenv("HOME"), ".config", "boob")
 }
 
 func createDirectoryIfNeeded(file string) {

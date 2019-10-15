@@ -16,6 +16,9 @@ func Print(dao *dao.BookmarkDao, args []string) error {
 	if args[0] == "tags" {
 		return printTags(dao)
 	}
+	if args[0] == "databases" {
+		return printDatabases(dao)
+	}
 
 	return nil
 }
@@ -39,6 +42,18 @@ func printTags(dao *dao.BookmarkDao) error {
 	}
 	sort.Strings(tags)
 	for _, tag := range tags {
+		fmt.Printf("%s\n", tag)
+	}
+	return nil
+}
+
+func printDatabases(dao *dao.BookmarkDao) error {
+	databases, err := dao.GetAllDatabases()
+	if err != nil {
+		return err
+	}
+	sort.Strings(databases)
+	for _, tag := range databases {
 		fmt.Printf("%s\n", tag)
 	}
 	return nil
